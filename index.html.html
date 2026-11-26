@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Pendukung ARKAS - Manajemen Akun OPS, Notifikasi Lupa Password & SPJ</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #eff6ff;
+      --success: #15803d;
+      --danger: #b91c1c;
+      --warning: #b45309;
+      --border: #cbd5e1;
+      --bg: #f8fafc;
+      --text: #0f172a;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    header {
+      background: var(--primary); color: #fff; padding: 14px 24px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .container { max-width: 1220px; margin: 24px auto; padding: 0 16px; }
+    .card {
+      background: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .login-box { max-width: 440px; margin: 50px auto; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    input, select, textarea {
+      width: 100%; padding: 8px 11px; border: 1px solid var(--border);
+      border-radius: 6px; margin-bottom: 10px; font-size: 14px;
+    }
+    button {
+      cursor: pointer; border: none; border-radius: 6px; padding: 8px 12px;
+      font-weight: 600; font-size: 13px; transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.9; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-warning { background: #d97706; color: #fff; }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--border); padding: 9px 8px; text-align: left; vertical-align: top; }
+    th { background: #f1f5f9; font-weight: 700; }
+    .badge { padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; display: inline-block; }
+    .pending { background: #fef3c7; color: var(--warning); }
+    .approved { background: #dcfce7; color: var(--success); }
+    .rejected { background: #fee2e2; color: var(--danger); }
+    .spj-tag { background: #e0e7ff; color: #1e40af; padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+    .hidden { display: none !important; }
+    .hint { font-size: 12px; color: #475569; background: var(--primary-light); padding: 10px; border-radius: 6px; margin-bottom: 14px; }
+    .warn-box { font-size: 13px; color: #92400e; background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 14px; }
+    .notif-danger-box { font-size: 13px; color: #7f1d1d; background: #fef2f2; border: 1.5px solid #ef4444; padding: 14px; border-radius: 8px; margin-bottom: 16px; }
+    .rkas-ref-box { font-size: 13px; color: #1e3a8a; background: #eff6ff; border: 1px solid #93c5fd; padding: 12px 14px; border-radius: 8px; margin-bottom: 14px; }
+    .item-row { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .summary-box { background: #f1f5f9; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 13.5px; }
+    .lampiran-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .lampiran-thumb { width: 110px; border: 1px solid var(--border); border-radius: 6px; padding: 4px; background: #fff; text-align: center; font-size: 11px; }
+    .lampiran-thumb img { width: 100%; height: 75px; object-fit: cover; border-radius: 4px; display: block; margin-bottom: 4px; }
+    .kop-preview { max-width: 100%; max-height: 130px; border: 1px dashed var(--border); border-radius: 6px; padding: 4px; background: #fff; display: block; margin: 6px 0; }
+    .rkas-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+    .backup-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px dashed var(--border); border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+    .section-divider { border-top: 1px solid var(--border); margin: 18px 0; padding-top: 16px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.65);
+      display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+    }
+    .print-sheet {
+      background: #fff; width: 100%; max-width: 840px; max-height: 92vh; overflow-y: auto;
+      padding: 28px; border-radius: 8px; border: 1px solid var(--border);
+    }
+    .doc-box { border: 1.5px solid #111; padding: 18px; margin-bottom: 20px; page-break-inside: avoid; }
+    .kop-cetak { width: 100%; max-height: 140px; object-fit: contain; display: block; margin: 0 auto 12px auto; border-bottom: 2px solid #111; padding-bottom: 8px; }
+    .doc-title { text-align: center; font-weight: 800; text-decoration: underline; margin-bottom: 14px; }
+    .ttd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; text-align: center; font-size: 13px; }
+    .ttd-space { height: 56px; }
+
+    @media print {
+      body > *:not(#printModal) { display: none !important; }
+      #printModal { position: static; background: none; padding: 0; }
+      .no-print { display: none !important; }
+      .print-sheet { border: none; max-height: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header id="appHeader" class="hidden">
+  <div>
+    <strong>ARKAS Finance & SPJ</strong>
+    <span id="userBadge" style="margin-left:10px; font-size:13px; opacity:0.9;"></span>
+  </div>
+  <button class="btn-outline" onclick="logout()">Keluar (Logout)</button>
+</header>
+
+<!-- LOGIN -->
+<div id="loginView" class="container">
+  <div class="card login-box">
+    <h2 style="margin-top:0;">Login Sistem ARKAS</h2>
+    <div id="loginNotifBanner"></div>
+    <div class="hint" id="hintAkunLogin"></div>
+    <form onsubmit="handleLogin(event)">
+      <label>Username</label>
+      <input type="text" id="loginUser" required placeholder="Masukkan username" />
+      <label>Password</label>
+      <input type="password" id="loginPass" required placeholder="Masukkan password" />
+      <button type="submit" class="btn-primary" style="width:100%;">Masuk</button>
+    </form>
+
+    <div style="margin-top:14px; text-align:center;">
+      <button type="button" class="btn-outline" style="width:100%; color:#b45309; border-color:#f59e0b;" onclick="bukaModalLupaPassword()">
+        Lupa Password (Bendahara / Kepala Sekolah)? Kirim Notifikasi ke OPS
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- UTAMA -->
+<div id="mainView" class="container hidden">
+
+  <!-- NOTIFIKASI LUPA PASSWORD UNTUK OPS -->
+  <div id="notifResetOpsWrap"></div>
+
+  <!-- PANEL KHUSUS OPS -->
+  <div id="panelOpsCard" class="card hidden">
+    <h3 style="margin-top:0;">Panel Pengaturan Sekolah, Akun & Dokumen RKAS (Khusus OPS)</h3>
+
+    <!-- 1. Manajemen Akun Kepala Sekolah & Bendahara oleh OPS -->
+    <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:18px;">
+      <h4 style="margin:0 0 10px 0;">1. Kelola Akun Login Kepala Sekolah & Bendahara</h4>
+      <form onsubmit="simpanAkunBaruOps(event)">
+        <div class="grid-4">
+          <div>
+            <label>Peran Akun</label>
+            <select id="newAccRole" required>
+              <option value="bendahara">Bendahara</option>
+              <option value="kepsek">Kepala Sekolah</option>
+            </select>
+          </div>
+          <div>
+            <label>Nama Lengkap Pemegang Akun</label>
+            <input type="text" id="newAccNama" required placeholder="Contoh: Siti Aminah, S.E." />
+          </div>
+          <div>
+            <label>Username Login</label>
+            <input type="text" id="newAccUser" required placeholder="Contoh: bendahara_bos" />
+          </div>
+          <div>
+            <label>Password Awal</label>
+            <input type="text" id="newAccPass" required placeholder="Contoh: 123456" />
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end;">
+          <button type="submit" class="btn-primary">+ Buat / Tambah Akun</button>
+        </div>
+      </form>
+
+      <div style="overflow-x:auto; margin-top:12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Peran</th>
+              <th>Nama Lengkap</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Status</th>
+              <th>Aksi OPS</th>
+            </tr>
+          </thead>
+          <tbody id="tabelAkunOps"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. Pejabat Sekolah, Kop & Upload RKAS PDF -->
+    <form onsubmit="simpanPengaturanOps(event)">
+      <h4 style="margin:0 0 10px 0;">2. Data Pejabat Tanda Tangan, Kop Sekolah & File RKAS</h4>
+      <div class="grid-3">
+        <div>
+          <label>Nama Kepala Sekolah (Tanda Tangan)</label>
+          <input type="text" id="inpKepsekNama" required />
+          <label>NIP / NIY Kepala Sekolah</label>
+          <input type="text" id="inpKepsekNip" placeholder="Contoh: NIP. 19750101..." />
+        </div>
+        <div>
+          <label>Nama Bendahara (Tanda Tangan)</label>
+          <input type="text" id="inpBendaharaNama" required />
+          <label>NIP / NIY Bendahara</label>
+          <input type="text" id="inpBendaharaNip" placeholder="Contoh: NIP. 19850505..." />
+        </div>
+        <div>
+          <label>Nama Operator Sekolah (OPS)</label>
+          <input type="text" id="inpOpsNama" required />
+          <label>NIP / NIY Operator Sekolah</label>
+          <input type="text" id="inpOpsNip" placeholder="Contoh: NIY. 20190012..." />
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:8px;">
+        <div>
+          <label>Upload Kop Sekolah (Gambar PNG/JPG)</label>
+          <input type="file" id="inpKopFile" accept="image/*" onchange="uploadKopSekolah(event)" />
+          <div id="previewKopOps"></div>
+        </div>
+        <div>
+          <label>Upload RKAS Tahunan (PDF)</label>
+          <input type="file" id="inpRkasTahunan" accept="application/pdf" onchange="uploadRkasPdf(event, 'tahunan')" />
+          <div id="statusRkasTahunan" style="font-size:12px; color:#475569;"></div>
+        </div>
+        <div>
+          <label>Upload RKAS Bulanan (PDF) — Acuan Bendahara</label>
+          <input type="file" id="inpRkasBulanan" accept="application/pdf" onchange="uploadRkasPdf(event, 'bulanan')" />
+          <div id="statusRkasBulanan" style="font-size:12px; color:#475569;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+        <button type="submit" class="btn-primary">Simpan Data Pejabat & Sekolah</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- INFO PEJABAT, DOKUMEN RKAS AKTIF & BACKUP/RESTORE -->
+  <div class="card">
+    <div class="rkas-bar">
+      <div style="font-size:13px;">
+        <strong>Pejabat Aktif:</strong>
+        Kepsek: <span id="lblKepsek"></span> |
+        Bendahara: <span id="lblBendahara"></span> |
+        OPS: <span id="lblOps"></span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;" id="tombolRkasAktif"></div>
+    </div>
+
+    <div class="backup-bar">
+      <div style="font-size:12.5px; color:#334155;">
+        <strong>Backup & Restore Sistem (JSON):</strong> Simpan seluruh data akun, pejabat, kop, RKAS PDF, dan SPJ ke file, atau pulihkan dari file backup.
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <button type="button" class="btn-success" onclick="backupDataJson()">Backup Data (.json)</button>
+        <label class="btn-outline" style="margin:0; cursor:pointer; padding:7px 12px; font-size:13px;">
+          Restore Data (.json)
+          <input type="file" id="inpRestoreJson" accept="application/json,.json" style="display:none;" onchange="restoreDataJson(event)" />
+        </label>
+        <button type="button" class="btn-outline" style="color:#b91c1c;" onclick="resetDataDefault()">Reset Default</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Pengajuan Keluar Uang (Bendahara) -->
+  <div id="formPengajuanCard" class="card hidden">
+    <h3 style="margin-top:0;">Proses Pengeluaran Dana & SPJ Sesuai RKAS Bulanan</h3>
+
+    <div id="bannerRkasBendahara"></div>
+
+    <div id="inlinePdfViewer" class="hidden" style="margin-bottom:16px; border:1px solid var(--border); border-radius:8px; padding:10px; background:#f8fafc;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <strong style="font-size:13px;" id="inlinePdfTitle">Dokumen RKAS Bulanan</strong>
+        <button type="button" class="btn-outline" style="padding:4px 10px; font-size:12px;" onclick="toggleInlineRkasPdf(false)">Sembunyikan PDF</button>
+      </div>
+      <iframe id="inlinePdfFrame" style="width:100%; height:360px; border:1px solid var(--border); border-radius:6px; background:#fff;"></iframe>
+    </div>
+
+    <form onsubmit="tambahPengajuan(event)">
+      <div class="grid-4">
+        <div>
+          <label>Bulan RKAS Pelaksanaan</label>
+          <select id="bulanRkas" required>
+            <option value="Januari">Januari</option>
+            <option value="Februari">Februari</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
+            <option value="Juni">Juni</option>
+            <option value="Juli">Juli</option>
+            <option value="Agustus">Agustus</option>
+            <option value="September">September</option>
+            <option value="Oktober">Oktober</option>
+            <option value="November" selected>November</option>
+            <option value="Desember">Desember</option>
+          </select>
+        </div>
+        <div>
+          <label>Jenis SPJ</label>
+          <select id="jenisSpj" onchange="toggleFormSpj()">
+            <option value="barang">SPJ Barang</option>
+            <option value="kegiatan">SPJ Kegiatan</option>
+          </select>
+        </div>
+        <div>
+          <label>Kode Rekening (Sesuai RKAS Bulanan)</label>
+          <input type="text" id="kodeRek" required placeholder="Contoh: 5.1.02.01.01.0024" />
+        </div>
+        <div>
+          <label>Penerima / Toko / Penanggung Jawab</label>
+          <input type="text" id="penerima" required placeholder="Contoh: CV Mitra Sarana" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>Kode & Nama Kegiatan RKAS (Sesuai PDF RKAS Bulanan)</label>
+          <input type="text" id="kegiatanRkasRef" required placeholder="Contoh: 03.03.17 - Pelaksanaan Administrasi Kegiatan Sekolah" />
+        </div>
+        <div>
+          <label>Pagu Anggaran Bulan Ini di RKAS (Rp) — Opsional untuk Kontrol</label>
+          <input type="number" id="paguBulanIni" min="0" placeholder="Contoh: 1500000" />
+        </div>
+      </div>
+
+      <!-- Field Khusus SPJ Barang -->
+      <div id="fieldBarang" class="grid-3">
+        <div>
+          <label>No. Nota / Faktur</label>
+          <input type="text" id="noNota" placeholder="Contoh: INV/2026/118" />
+        </div>
+        <div>
+          <label>Tanggal Serah Terima Barang</label>
+          <input type="date" id="tglTerima" value="2026-11-26" />
+        </div>
+        <div>
+          <label>Lokasi Penerimaan</label>
+          <input type="text" id="lokasiBarang" placeholder="Contoh: Ruang TU / Gudang" />
+        </div>
+      </div>
+
+      <!-- Field Khusus SPJ Kegiatan -->
+      <div id="fieldKegiatan" class="grid-3 hidden">
+        <div>
+          <label>Nama Kegiatan</label>
+          <input type="text" id="namaKegiatan" placeholder="Contoh: Rapat Evaluasi Semester" />
+        </div>
+        <div>
+          <label>Tanggal Pelaksanaan</label>
+          <input type="date" id="tglKegiatan" value="2026-11-26" />
+        </div>
+        <div>
+          <label>Tempat Kegiatan</label>
+          <input type="text" id="tempatKegiatan" placeholder="Contoh: Ruang Guru / Aula" />
+        </div>
+      </div>
+
+      <label>Uraian Belanja Sesuai RKAS Bulanan</label>
+      <textarea id="uraian" rows="2" required placeholder="Uraian pengeluaran sesuai rincian RKAS bulanan"></textarea>
+
+      <!-- Rincian Item + Pajak per Baris -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <label style="margin:0;">Rincian Item / Komponen & Pengaturan Pajak</label>
+        <button type="button" class="btn-outline" onclick="tambahBarisItem()">+ Tambah Baris</button>
+      </div>
+      <div id="daftarItemInput"></div>
+
+      <!-- Unggah Foto / Bukti Lampiran -->
+      <div style="margin-top:10px;">
+        <label>Unggah Foto / Bukti Lampiran (Foto Nota/Bon, Barang Datang, atau Dokumentasi Kegiatan)</label>
+        <input type="file" id="inputLampiran" accept="image/*" multiple onchange="prosesFileLampiran(event)" />
+        <div id="previewLampiranForm" class="lampiran-grid"></div>
+      </div>
+
+      <div class="summary-box">
+        <div>Subtotal (DPP): <strong id="sumSubtotal">Rp0</strong> &nbsp;|&nbsp; PPN: <strong id="sumPpn">Rp0</strong> &nbsp;|&nbsp; Potongan PPh: <strong id="sumPph">Rp0</strong></div>
+        <div style="margin-top:6px;">Total Pembayaran: <strong id="sumTotal" style="font-size:15px;">Rp0</strong> <span id="infoSisaPagu" style="margin-left:10px; font-size:12.5px;"></span></div>
+        <div style="font-size:12px; color:#475569; margin-top:4px;">Terbilang: <span id="sumTerbilang">Nol Rupiah</span></div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+        <button type="submit" class="btn-primary">Kirim Pengajuan ke Kepala Sekolah</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Daftar Pengajuan -->
+  <div class="card">
+    <h3 style="margin-top:0;">Daftar Pengajuan, Persetujuan Kepala Sekolah & Dokumen SPJ</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>No. Dokumen</th>
+            <th>Bulan & Jenis</th>
+            <th>Kegiatan & Rekening RKAS</th>
+            <th>Penerima</th>
+            <th>Total</th>
+            <th>Lampiran</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelPengajuan"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LUPA PASSWORD -->
+<div id="forgotModal" class="modal-overlay hidden">
+  <div class="print-sheet" style="max-width:440px;">
+    <h3 style="margin-top:0;">Lupa Password Akun</h3>
+    <p style="font-size:13px; color:#475569; margin-top:0;">
+      Pilih akun Anda atau masukkan username. Sistem akan mengirimkan notifikasi permintaan reset password kepada <strong>Operator Sekolah (OPS)</strong>.
+    </p>
+    <form onsubmit="kirimNotifLupaPassword(event)">
+      <label>Pilih Akun Bendahara / Kepala Sekolah</label>
+      <select id="forgotUserSelect" required></select>
+      <label>Catatan Tambahan (Opsional)</label>
+      <input type="text" id="forgotNote" placeholder="Contoh: Mohon direset segera untuk input SPJ" />
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px;">
+        <button type="button" class="btn-outline" onclick="tutupModal('forgotModal')">Batal</button>
+        <button type="submit" class="btn-warning">Kirim Notifikasi ke OPS</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CETAK DOKUMEN SPJ -->
+<div id="printModal" class="modal-overlay hidden">
+  <div class="print-sheet">
+    <div class="no-print" style="display:flex; justify-content:space-between; margin-bottom:16px;">
+      <button class="btn-primary" onclick="window.print()">Cetak / Simpan PDF</button>
+      <button class="btn-outline" onclick="tutupModal('printModal')">Tutup</button>
+    </div>
+    <div id="kontenCetak"></div>
+  </div>
+</div>
+
+<!-- MODAL PRATINJAU PDF RKAS -->
+<div id="pdfModal" class="modal-overlay hidden">
+  <div class="print-sheet" style="max-width:920px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <strong id="judulPdfModal">Pratinjau Dokumen RKAS</strong>
+      <div style="display:flex; gap:8px;">
+        <a id="linkUnduhPdf" class="btn-primary" style="text-decoration:none; padding:8px 12px; border-radius:6px; font-size:13px;" download>Unduh PDF</a>
+        <button class="btn-outline" onclick="tutupModal('pdfModal')">Tutup</button>
+      </div>
+    </div>
+    <iframe id="framePdfRkas" style="width:100%; height:72vh; border:1px solid var(--border); border-radius:6px;"></iframe>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'arkas_spj_backup_v2';
+
+  const DEFAULT_USERS = [
+    { id: 1, username: 'ops1', pass: '1234', nama: 'Budi Santoso, S.Pd.', jabatan: 'Operator Sekolah (OPS)', role: 'ops', active: true },
+    { id: 2, username: 'bendahara1', pass: '1234', nama: 'Siti Aminah, S.E.', jabatan: 'Bendahara BOS', role: 'bendahara', active: true },
+    { id: 3, username: 'kepsek1', pass: '1234', nama: 'Drs. H. Ahmad Hidayat, M.Pd.', jabatan: 'Kepala Sekolah', role: 'kepsek', active: true }
+  ];
+
+  const DEFAULT_CONFIG = {
+    kepsekNama: 'Drs. H. Ahmad Hidayat, M.Pd.',
+    kepsekNip: 'NIP. 19740817 200003 1 004',
+    bendaharaNama: 'Siti Aminah, S.E.',
+    bendaharaNip: 'NIP. 19860412 201001 2 011',
+    opsNama: 'Budi Santoso, S.Pd.',
+    opsNip: 'NIY. 20180901 1 008',
+    kopDataUrl: '',
+    rkasTahunan: null,
+    rkasBulanan: null
+  };
+
+  const DEFAULT_PENGAJUAN = [
+    {
+      id: 1,
+      noKwitansi: 'SPJ-BRG/001/XI/2026',
+      bulanRkas: 'November',
+      rkasRefName: 'RKAS_Bulanan_November_2026.pdf',
+      kegiatanRkasRef: '03.03.17 - Pelaksanaan Administrasi Kegiatan Sekolah',
+      jenisSpj: 'barang',
+      kodeRek: '5.1.02.01.01.0024',
+      uraian: 'Pengadaan kertas HVS & tinta cetak administrasi',
+      penerima: 'CV Mitra Sarana',
+      noNota: 'INV-2026-101',
+      tglTerima: '2026-11-26',
+      lokasiBarang: 'Ruang Tata Usaha',
+      items: [
+        { nama: 'Kertas HVS A4 80gr', qty: 10, satuan: 'Rim', harga: 55000, ppnPct: 11, pphPct: 1.5 },
+        { nama: 'Tinta Printer Hitam', qty: 3, satuan: 'Botol', harga: 100000, ppnPct: 11, pphPct: 1.5 }
+      ],
+      lampiran: [],
+      tanggal: '2026-11-26',
+      status: 'pending',
+      catatan: ''
+    },
+    {
+      id: 2,
+      noKwitansi: 'SPJ-KEG/002/XI/2026',
+      bulanRkas: 'November',
+      rkasRefName: 'RKAS_Bulanan_November_2026.pdf',
+      kegiatanRkasRef: '03.01.03 - Penyusunan Kurikulum & Evaluasi Pembelajaran',
+      jenisSpj: 'kegiatan',
+      kodeRek: '5.1.02.01.01.0052',
+      uraian: 'Belanja konsumsi kegiatan rapat evaluasi pembelajaran',
+      penerima: 'Warung Makan Berkah',
+      namaKegiatan: 'Rapat Evaluasi Pembelajaran Semester',
+      tglKegiatan: '2026-11-25',
+      tempatKegiatan: 'Ruang Guru',
+      items: [
+        { nama: 'Konsumsi Rapat (Kotak)', qty: 25, satuan: 'Paket', harga: 25000, ppnPct: 0, pphPct: 2 }
+      ],
+      lampiran: [],
+      tanggal: '2026-11-25',
+      status: 'approved',
+      catatan: 'Disetujui sesuai jadwal kegiatan.'
+    }
+  ];
+
+  let usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
+  let resetRequests = []; // { id, userId, username, nama, role, note, requestedAt, status: 'open'|'resolved' }
+  let schoolConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  let pengajuanList = JSON.parse(JSON.stringify(DEFAULT_PENGAJUAN));
+  let currentUser = null;
+  let draftLampiran = [];
+
+  function simpanKeLocalStorage() {
+    try {
+      const payload = {
+        app: 'ARKAS_SPJ_SYSTEM',
+        version: 2,
+        savedAt: new Date().toISOString(),
+        usersList,
+        resetRequests,
+        schoolConfig,
+        pengajuanList
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      console.warn('Penyimpanan lokal penuh atau dibatasi:', err);
+    }
+  }
+
+  function muatDariLocalStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.usersList) && parsed.usersList.length > 0) usersList = parsed.usersList;
+      if (Array.isArray(parsed.resetRequests)) resetRequests = parsed.resetRequests;
+      if (parsed.schoolConfig) schoolConfig = { ...DEFAULT_CONFIG, ...parsed.schoolConfig };
+      if (Array.isArray(parsed.pengajuanList)) pengajuanList = parsed.pengajuanList;
+    } catch (err) {
+      console.warn('Gagal memuat data lokal:', err);
+    }
+  }
+
+  function renderHintAkunLogin() {
+    const aktif = usersList.filter(u => u.active !== false);
+    const listHtml = aktif.map(u => {
+      const labelRole = u.role === 'ops' ? 'OPS' : u.role === 'bendahara' ? 'Bendahara' : 'Kepsek';
+      return `• ${labelRole} (${u.nama}): <code>${u.username}</code> / <code>${u.pass}</code>`;
+    }).join('<br/>');
+    document.getElementById('hintAkunLogin').innerHTML = `<strong>Daftar Akun Terdaftar:</strong><br/>${listHtml}`;
+  }
+
+  function backupDataJson() {
+    const backupPayload = {
+      app: 'ARKAS_SPJ_SYSTEM',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      usersList,
+      resetRequests,
+      schoolConfig,
+      pengajuanList
+    };
+    const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const tgl = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-arkas-spj-${tgl}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function restoreDataJson(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.pengajuanList)) {
+          return alert('Format file backup (.json) tidak valid.');
+        }
+        if (!confirm('Restore data akan menimpa data aktif saat ini. Lanjutkan?')) {
+          e.target.value = '';
+          return;
+        }
+        if (Array.isArray(parsed.usersList) && parsed.usersList.length > 0) usersList = parsed.usersList;
+        if (Array.isArray(parsed.resetRequests)) resetRequests = parsed.resetRequests;
+        schoolConfig = { ...DEFAULT_CONFIG, ...(parsed.schoolConfig || {}) };
+        pengajuanList = parsed.pengajuanList;
+        simpanKeLocalStorage();
+        if (currentUser && currentUser.role === 'ops') {
+          muatFormOps();
+          renderNotifResetOps();
+          renderTabelAkunOps();
+        }
+        sinkronTampilanSekolah();
+        renderTabel();
+        alert('Restore data berhasil dipulihkan.');
+      } catch (err) {
+        alert('Gagal membaca file backup: ' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function resetDataDefault() {
+    if (!confirm('Kembalikan seluruh data ke pengaturan awal (default)?')) return;
+    usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
+    resetRequests = [];
+    schoolConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    pengajuanList = JSON.parse(JSON.stringify(DEFAULT_PENGAJUAN));
+    localStorage.removeItem(STORAGE_KEY);
+    if (currentUser && currentUser.role === 'ops') {
+      muatFormOps();
+      renderNotifResetOps();
+      renderTabelAkunOps();
+    }
+    sinkronTampilanSekolah();
+    renderTabel();
+  }
+
+  muatDariLocalStorage();
+  renderHintAkunLogin();
+
+  const rupiah = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Math.round(n));
+
+  function terbilang(angka) {
+    angka = Math.floor(Math.abs(Number(angka) || 0));
+    if (angka === 0) return 'Nol Rupiah';
+    const huruf = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+    function baca(n) {
+      if (n < 12) return huruf[n];
+      if (n < 20) return baca(n - 10) + ' Belas';
+      if (n < 100) return baca(Math.floor(n / 10)) + ' Puluh ' + baca(n % 10);
+      if (n < 200) return 'Seratus ' + baca(n - 100);
+      if (n < 1000) return baca(Math.floor(n / 100)) + ' Ratus ' + baca(n % 100);
+      if (n < 2000) return 'Seribu ' + baca(n - 1000);
+      if (n < 1000000) return baca(Math.floor(n / 1000)) + ' Ribu ' + baca(n % 1000);
+      if (n < 1000000000) return baca(Math.floor(n / 1000000)) + ' Juta ' + baca(n % 1000000);
+      return baca(Math.floor(n / 1000000000)) + ' Miliar ' + baca(n % 1000000000);
+    }
+    return baca(angka).replace(/\s+/g, ' ').trim() + ' Rupiah';
+  }
+
+  function hitungRingkasan(items) {
+    let subtotal = 0, ppn = 0, pph = 0;
+    items.forEach(it => {
+      const sub = Number(it.qty) * Number(it.harga);
+      const itemPpn = sub * (Number(it.ppnPct || 0) / 100);
+      const itemPph = sub * (Number(it.pphPct || 0) / 100);
+      subtotal += sub;
+      ppn += itemPpn;
+      pph += itemPph;
+    });
+    const total = subtotal + ppn - pph;
+    return { subtotal, ppn, pph, total };
+  }
+
+  /* LUPA PASSWORD & NOTIFIKASI KE OPS */
+  function bukaModalLupaPassword() {
+    const sel = document.getElementById('forgotUserSelect');
+    const targetUsers = usersList.filter(u => u.role === 'bendahara' || u.role === 'kepsek');
+    if (targetUsers.length === 0) {
+      return alert('Belum ada akun Bendahara atau Kepala Sekolah. Hubungi OPS.');
+    }
+    sel.innerHTML = targetUsers.map(u => {
+      const roleLbl = u.role === 'bendahara' ? 'Bendahara' : 'Kepala Sekolah';
+      return `<option value="${u.id}">${roleLbl} — ${u.nama} (username: ${u.username})</option>`;
+    }).join('');
+    document.getElementById('forgotNote').value = '';
+    document.getElementById('forgotModal').classList.remove('hidden');
+  }
+
+  function kirimNotifLupaPassword(e) {
+    e.preventDefault();
+    const userId = Number(document.getElementById('forgotUserSelect').value);
+    const userObj = usersList.find(u => u.id === userId);
+    if (!userObj) return;
+    const note = document.getElementById('forgotNote').value.trim();
+
+    resetRequests.unshift({
+      id: Date.now(),
+      userId: userObj.id,
+      username: userObj.username,
+      nama: userObj.nama,
+      role: userObj.role,
+      note,
+      requestedAt: new Date().toLocaleString('id-ID'),
+      status: 'open'
+    });
+    simpanKeLocalStorage();
+    tutupModal('forgotModal');
+
+    const banner = document.getElementById('loginNotifBanner');
+    banner.innerHTML = `
+      <div class="warn-box">
+        <strong>Notifikasi Terkirim ke OPS:</strong> Permintaan reset password untuk akun <strong>${userObj.nama}</strong> (<code>${userObj.username}</code>) telah dikirim. Silakan login ke akun <strong>OPS</strong> untuk mengganti password.
+      </div>
+    `;
+  }
+
+  function renderNotifResetOps() {
+    const wrap = document.getElementById('notifResetOpsWrap');
+    if (!currentUser || currentUser.role !== 'ops') {
+      wrap.innerHTML = '';
+      return;
+    }
+    const openReqs = resetRequests.filter(r => r.status === 'open');
+    if (openReqs.length === 0) {
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = `
+      <div class="notif-danger-box">
+        <strong>NOTIFIKASI LUPA PASSWORD (${openReqs.length} Permintaan Masuk):</strong>
+        <div style="margin-top:8px;">
+          ${openReqs.map(r => {
+            const roleLbl = r.role === 'bendahara' ? 'Bendahara' : 'Kepala Sekolah';
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:8px 0; border-top:1px solid #fecaca;">
+                <div>
+                  <strong>${roleLbl}: ${r.nama}</strong> (Username: <code>${r.username}</code>) — <small>${r.requestedAt}</small>
+                  ${r.note ? `<div style="font-size:12px;">Catatan: "${r.note}"</div>` : ''}
+                </div>
+                <button type="button" class="btn-danger" onclick="opsUbahPasswordDariNotif(${r.id})">Ubah Password Sekarang</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function opsUbahPasswordDariNotif(reqId) {
+    const req = resetRequests.find(r => r.id === reqId);
+    if (!req) return;
+    const userObj = usersList.find(u => u.id === req.userId);
+    if (!userObj) return alert('Akun tidak ditemukan.');
+    const passBaru = prompt(`Masukkan password baru untuk ${userObj.nama} (${userObj.username}):`);
+    if (!passBaru || !passBaru.trim()) return;
+    userObj.pass = passBaru.trim();
+    req.status = 'resolved';
+    simpanKeLocalStorage();
+    renderNotifResetOps();
+    renderTabelAkunOps();
+    renderHintAkunLogin();
+    alert(`Password untuk ${userObj.nama} berhasil diubah menjadi: ${userObj.pass}`);
+  }
+
+  /* LOGIN & LOGOUT */
+  function handleLogin(e) {
+    e.preventDefault();
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    const found = usersList.find(x => x.username === u && x.pass === p);
+    if (!found) return alert('Username atau password salah. Jika lupa password, klik tombol Lupa Password di bawah.');
+    if (found.active === false) return alert('Akun ini dinonaktifkan oleh OPS.');
+    currentUser = found;
+
+    document.getElementById('loginNotifBanner').innerHTML = '';
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('mainView').classList.remove('hidden');
+    document.getElementById('appHeader').classList.remove('hidden');
+
+    const isOps = found.role === 'ops';
+    const isBendahara = found.role === 'bendahara';
+    document.getElementById('panelOpsCard').classList.toggle('hidden', !isOps);
+    document.getElementById('formPengajuanCard').classList.toggle('hidden', !isBendahara);
+
+    renderNotifResetOps();
+    if (isOps) {
+      muatFormOps();
+      renderTabelAkunOps();
+    }
+    if (isBendahara) {
+      if (document.getElementById('daftarItemInput').children.length === 0) {
+        resetFormItems();
+        toggleFormSpj();
+      }
+      renderBannerRkasBendahara();
+    }
+    sinkronTampilanSekolah();
+    renderTabel();
+  }
+
+  function logout() {
+    currentUser = null;
+    document.getElementById('loginView').classList.remove('hidden');
+    document.getElementById('mainView').classList.add('hidden');
+    document.getElementById('appHeader').classList.add('hidden');
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    renderHintAkunLogin();
+  }
+
+  /* MANAJEMEN AKUN OLEH OPS */
+  function simpanAkunBaruOps(e) {
+    e.preventDefault();
+    const role = document.getElementById('newAccRole').value;
+    const nama = document.getElementById('newAccNama').value.trim();
+    const username = document.getElementById('newAccUser').value.trim();
+    const pass = document.getElementById('newAccPass').value.trim();
+
+    if (usersList.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+      return alert('Username sudah digunakan. Gunakan username lain.');
+    }
+
+    usersList.push({
+      id: Date.now(),
+      username,
+      pass,
+      nama,
+      jabatan: role === 'kepsek' ? 'Kepala Sekolah' : 'Bendahara BOS',
+      role,
+      active: true
+    });
+
+    if (role === 'kepsek') schoolConfig.kepsekNama = nama;
+    if (role === 'bendahara') schoolConfig.bendaharaNama = nama;
+
+    simpanKeLocalStorage();
+    e.target.reset();
+    muatFormOps();
+    renderTabelAkunOps();
+    sinkronTampilanSekolah();
+    alert(`Akun ${role === 'kepsek' ? 'Kepala Sekolah' : 'Bendahara'} (${username}) berhasil dibuat.`);
+  }
+
+  function renderTabelAkunOps() {
+    const tbody = document.getElementById('tabelAkunOps');
+    tbody.innerHTML = usersList.map(u => {
+      const roleLbl = u.role === 'ops' ? 'OPS' : u.role === 'bendahara' ? 'Bendahara' : 'Kepala Sekolah';
+      const statusBadge = u.active !== false
+        ? '<span class="badge approved">Aktif</span>'
+        : '<span class="badge rejected">Nonaktif</span>';
+
+      const aksiBtns = u.role === 'ops'
+        ? `<button type="button" class="btn-outline" onclick="opsUbahPasswordAkun(${u.id})">Ubah Password OPS</button>`
+        : `
+          <button type="button" class="btn-outline" onclick="opsEditAkun(${u.id})">Edit</button>
+          <button type="button" class="btn-warning" onclick="opsUbahPasswordAkun(${u.id})">Ubah Password</button>
+          <button type="button" class="btn-outline" onclick="opsToggleAktifAkun(${u.id})">${u.active !== false ? 'Nonaktifkan' : 'Aktifkan'}</button>
+          <button type="button" class="btn-danger" onclick="opsHapusAkun(${u.id})">Hapus</button>
+        `;
+
+      return `
+        <tr>
+          <td><strong>${roleLbl}</strong></td>
+          <td>${u.nama}</td>
+          <td><code>${u.username}</code></td>
+          <td><code>${u.pass}</code></td>
+          <td>${statusBadge}</td>
+          <td style="white-space:nowrap;">${aksiBtns}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function opsEditAkun(userId) {
+    const u = usersList.find(x => x.id === userId);
+    if (!u) return;
+    const namaBaru = prompt('Edit Nama Lengkap:', u.nama);
+    if (namaBaru === null) return;
+    const userBaru = prompt('Edit Username Login:', u.username);
+    if (userBaru === null) return;
+    if (!namaBaru.trim() || !userBaru.trim()) return alert('Nama dan username tidak boleh kosong.');
+    if (usersList.some(x => x.id !== userId && x.username.toLowerCase() === userBaru.trim().toLowerCase())) {
+      return alert('Username sudah dipakai akun lain.');
+    }
+    u.nama = namaBaru.trim();
+    u.username = userBaru.trim();
+    simpanKeLocalStorage();
+    renderTabelAkunOps();
+    sinkronTampilanSekolah();
+  }
+
+  function opsUbahPasswordAkun(userId) {
+    const u = usersList.find(x => x.id === userId);
+    if (!u) return;
+    const passBaru = prompt(`Masukkan password baru untuk ${u.nama} (${u.username}):`, u.pass);
+    if (!passBaru || !passBaru.trim()) return;
+    u.pass = passBaru.trim();
+    resetRequests.forEach(r => {
+      if (r.userId === userId && r.status === 'open') r.status = 'resolved';
+    });
+    simpanKeLocalStorage();
+    renderNotifResetOps();
+    renderTabelAkunOps();
+    alert(`Password akun ${u.username} berhasil diperbarui.`);
+  }
+
+  function opsToggleAktifAkun(userId) {
+    const u = usersList.find(x => x.id === userId);
+    if (!u) return;
+    u.active = u.active === false ? true : false;
+    simpanKeLocalStorage();
+    renderTabelAkunOps();
+  }
+
+  function opsHapusAkun(userId) {
+    const u = usersList.find(x => x.id === userId);
+    if (!u) return;
+    if (!confirm(`Hapus akun ${u.nama} (${u.username})?`)) return;
+    usersList = usersList.filter(x => x.id !== userId);
+    simpanKeLocalStorage();
+    renderTabelAkunOps();
+  }
+
+  /* FUNGSI PANEL OPS LAINNYA */
+  function muatFormOps() {
+    document.getElementById('inpKepsekNama').value = schoolConfig.kepsekNama;
+    document.getElementById('inpKepsekNip').value = schoolConfig.kepsekNip;
+    document.getElementById('inpBendaharaNama').value = schoolConfig.bendaharaNama;
+    document.getElementById('inpBendaharaNip').value = schoolConfig.bendaharaNip;
+    document.getElementById('inpOpsNama').value = schoolConfig.opsNama;
+    document.getElementById('inpOpsNip').value = schoolConfig.opsNip;
+    renderPreviewKopOps();
+    renderStatusRkasOps();
+  }
+
+  function simpanPengaturanOps(e) {
+    e.preventDefault();
+    schoolConfig.kepsekNama = document.getElementById('inpKepsekNama').value.trim();
+    schoolConfig.kepsekNip = document.getElementById('inpKepsekNip').value.trim();
+    schoolConfig.bendaharaNama = document.getElementById('inpBendaharaNama').value.trim();
+    schoolConfig.bendaharaNip = document.getElementById('inpBendaharaNip').value.trim();
+    schoolConfig.opsNama = document.getElementById('inpOpsNama').value.trim();
+    schoolConfig.opsNip = document.getElementById('inpOpsNip').value.trim();
+    simpanKeLocalStorage();
+    sinkronTampilanSekolah();
+    alert('Data pejabat dan pengaturan sekolah berhasil diperbarui.');
+  }
+
+  function uploadKopSekolah(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      schoolConfig.kopDataUrl = ev.target.result;
+      simpanKeLocalStorage();
+      renderPreviewKopOps();
+      sinkronTampilanSekolah();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderPreviewKopOps() {
+    const box = document.getElementById('previewKopOps');
+    if (!schoolConfig.kopDataUrl) {
+      box.innerHTML = '<small style="color:#64748b;">Belum ada gambar kop sekolah.</small>';
+      return;
+    }
+    box.innerHTML = `
+      <img src="${schoolConfig.kopDataUrl}" class="kop-preview" alt="Kop Sekolah" />
+      <button type="button" class="btn-outline" style="font-size:11px; padding:3px 8px;" onclick="schoolConfig.kopDataUrl=''; simpanKeLocalStorage(); renderPreviewKopOps();">Hapus Kop</button>
+    `;
+  }
+
+  function uploadRkasPdf(e, tipe) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') return alert('Harap pilih file berformat PDF.');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const payload = {
+        name: file.name,
+        dataUrl: ev.target.result,
+        uploadedAt: new Date().toLocaleDateString('id-ID')
+      };
+      if (tipe === 'tahunan') schoolConfig.rkasTahunan = payload;
+      else schoolConfig.rkasBulanan = payload;
+      simpanKeLocalStorage();
+      renderStatusRkasOps();
+      sinkronTampilanSekolah();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderStatusRkasOps() {
+    const t = schoolConfig.rkasTahunan;
+    const b = schoolConfig.rkasBulanan;
+    document.getElementById('statusRkasTahunan').innerHTML = t
+      ? `Terunggah: <strong>${t.name}</strong> (${t.uploadedAt})`
+      : 'Belum ada file RKAS Tahunan.';
+    document.getElementById('statusRkasBulanan').innerHTML = b
+      ? `Terunggah: <strong>${b.name}</strong> (${b.uploadedAt})`
+      : 'Belum ada file RKAS Bulanan.';
+  }
+
+  function sinkronTampilanSekolah() {
+    if (currentUser) {
+      document.getElementById('userBadge').textContent = `| ${currentUser.nama} (${currentUser.jabatan})`;
+    }
+    document.getElementById('lblKepsek').textContent = schoolConfig.kepsekNama;
+    document.getElementById('lblBendahara').textContent = schoolConfig.bendaharaNama;
+    document.getElementById('lblOps').textContent = schoolConfig.opsNama;
+
+    const btnWrap = document.getElementById('tombolRkasAktif');
+    let html = '';
+    if (schoolConfig.rkasTahunan) {
+      html += `<button type="button" class="btn-outline" onclick="lihatPdfRkas('tahunan')">Lihat RKAS Tahunan (PDF)</button>`;
+    } else {
+      html += `<span class="badge pending">RKAS Tahunan Belum Diunggah</span>`;
+    }
+    if (schoolConfig.rkasBulanan) {
+      html += `<button type="button" class="btn-outline" onclick="lihatPdfRkas('bulanan')">Lihat RKAS Bulanan (PDF)</button>`;
+    } else {
+      html += `<span class="badge pending">RKAS Bulanan Belum Diunggah</span>`;
+    }
+    btnWrap.innerHTML = html;
+    if (currentUser && currentUser.role === 'bendahara') {
+      renderBannerRkasBendahara();
+    }
+  }
+
+  function renderBannerRkasBendahara() {
+    const box = document.getElementById('bannerRkasBendahara');
+    const b = schoolConfig.rkasBulanan;
+    if (!b) {
+      box.innerHTML = `
+        <div class="warn-box">
+          <strong>Perhatian:</strong> Akun OPS belum mengunggah file <strong>RKAS Bulanan (PDF)</strong>. Minta OPS mengunggah RKAS Bulanan terlebih dahulu agar pengajuan sesuai pagu bulan berjalan.
+        </div>
+      `;
+      toggleInlineRkasPdf(false);
+      return;
+    }
+    box.innerHTML = `
+      <div class="rkas-ref-box" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <strong>Acuan RKAS Bulanan Aktif (dari OPS):</strong> <code>${b.name}</code> (Diunggah: ${b.uploadedAt})<br/>
+          <small>Pastikan Kode Rekening, Nama Kegiatan, dan nominal belanja sesuai dengan rincian di RKAS Bulanan.</small>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-primary" onclick="toggleInlineRkasPdf(true)">Buka RKAS Bulanan di Atas Form</button>
+          <button type="button" class="btn-outline" onclick="lihatPdfRkas('bulanan')">Layar Penuh</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleInlineRkasPdf(show) {
+    const wrap = document.getElementById('inlinePdfViewer');
+    if (!show || !schoolConfig.rkasBulanan) {
+      wrap.classList.add('hidden');
+      return;
+    }
+    document.getElementById('inlinePdfTitle').textContent = `Acuan RKAS Bulanan: ${schoolConfig.rkasBulanan.name}`;
+    document.getElementById('inlinePdfFrame').src = schoolConfig.rkasBulanan.dataUrl;
+    wrap.classList.remove('hidden');
+  }
+
+  function lihatPdfRkas(tipe) {
+    const doc = tipe === 'tahunan' ? schoolConfig.rkasTahunan : schoolConfig.rkasBulanan;
+    if (!doc) return;
+    document.getElementById('judulPdfModal').textContent = `${tipe === 'tahunan' ? 'RKAS Tahunan' : 'RKAS Bulanan'} — ${doc.name}`;
+    document.getElementById('framePdfRkas').src = doc.dataUrl;
+    const dl = document.getElementById('linkUnduhPdf');
+    dl.href = doc.dataUrl;
+    dl.download = doc.name;
+    document.getElementById('pdfModal').classList.remove('hidden');
+  }
+
+  /* FORM PENGAJUAN BENDAHARA */
+  function toggleFormSpj() {
+    const jenis = document.getElementById('jenisSpj').value;
+    document.getElementById('fieldBarang').classList.toggle('hidden', jenis !== 'barang');
+    document.getElementById('fieldKegiatan').classList.toggle('hidden', jenis !== 'kegiatan');
+  }
+
+  function resetFormItems() {
+    document.getElementById('daftarItemInput').innerHTML = '';
+    draftLampiran = [];
+    document.getElementById('previewLampiranForm').innerHTML = '';
+    tambahBarisItem();
+  }
+
+  function tambahBarisItem() {
+    const wrap = document.getElementById('daftarItemInput');
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+      <div class="grid-4">
+        <div>
+          <label>Uraian Item / Barang / Biaya</label>
+          <input type="text" class="it-nama" required oninput="updateRingkasanForm()" placeholder="Contoh: Spidol Boardmarker" />
+        </div>
+        <div>
+          <label>Qty & Satuan</label>
+          <div style="display:flex; gap:6px;">
+            <input type="number" class="it-qty" min="1" value="1" required oninput="updateRingkasanForm()" style="width:72px;" />
+            <input type="text" class="it-satuan" value="Unit" required placeholder="Unit" />
+          </div>
+        </div>
+        <div>
+          <label>Harga Satuan (Rp)</label>
+          <input type="number" class="it-harga" min="0" value="0" required oninput="updateRingkasanForm()" />
+        </div>
+        <div>
+          <label>PPN (%) & PPh (%)</label>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <select class="it-ppn" onchange="updateRingkasanForm()">
+              <option value="0">PPN 0%</option>
+              <option value="11">PPN 11%</option>
+            </select>
+            <select class="it-pph" onchange="updateRingkasanForm()">
+              <option value="0">PPh 0%</option>
+              <option value="1.5">PPh 1.5%</option>
+              <option value="2">PPh 2%</option>
+              <option value="5">PPh 5%</option>
+            </select>
+            <button type="button" class="btn-outline" style="height:35px;" onclick="this.closest('.item-row').remove(); updateRingkasanForm();">x</button>
+          </div>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(div);
+    updateRingkasanForm();
+  }
+
+  function ambilItemsDariForm() {
+    const rows = Array.from(document.querySelectorAll('#daftarItemInput .item-row'));
+    return rows.map(r => ({
+      nama: r.querySelector('.it-nama').value.trim(),
+      qty: Number(r.querySelector('.it-qty').value),
+      satuan: r.querySelector('.it-satuan').value.trim(),
+      harga: Number(r.querySelector('.it-harga').value),
+      ppnPct: Number(r.querySelector('.it-ppn').value),
+      pphPct: Number(r.querySelector('.it-pph').value)
+    })).filter(x => x.nama);
+  }
+
+  function updateRingkasanForm() {
+    const items = ambilItemsDariForm();
+    const s = hitungRingkasan(items);
+    document.getElementById('sumSubtotal').textContent = rupiah(s.subtotal);
+    document.getElementById('sumPpn').textContent = rupiah(s.ppn);
+    document.getElementById('sumPph').textContent = rupiah(s.pph);
+    document.getElementById('sumTotal').textContent = rupiah(s.total);
+    document.getElementById('sumTerbilang').textContent = terbilang(s.total);
+
+    const pagu = Number(document.getElementById('paguBulanIni')?.value || 0);
+    const infoPagu = document.getElementById('infoSisaPagu');
+    if (pagu > 0) {
+      const sisa = pagu - (s.subtotal + s.ppn);
+      infoPagu.innerHTML = sisa >= 0
+        ? `<span style="color:#15803d;">(Sisa Pagu Bulan Ini: <strong>${rupiah(sisa)}</strong>)</span>`
+        : `<span style="color:#b91c1c;">(Melebihi Pagu Bulan Ini sebesar <strong>${rupiah(Math.abs(sisa))}</strong>)</span>`;
+    } else {
+      infoPagu.textContent = '';
+    }
+  }
+
+  document.addEventListener('input', (e) => {
+    if (e.target && e.target.id === 'paguBulanIni') updateRingkasanForm();
+  });
+
+  function prosesFileLampiran(e) {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        draftLampiran.push({ name: file.name, dataUrl: ev.target.result });
+        renderPreviewLampiranForm();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPreviewLampiranForm() {
+    const box = document.getElementById('previewLampiranForm');
+    box.innerHTML = draftLampiran.map((f, idx) => `
+      <div class="lampiran-thumb">
+        <img src="${f.dataUrl}" alt="${f.name}" />
+        <div>${f.name.slice(0, 14)}</div>
+        <button type="button" class="btn-outline" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="hapusDraftLampiran(${idx})">Hapus</button>
+      </div>
+    `).join('');
+  }
+
+  function hapusDraftLampiran(idx) {
+    draftLampiran.splice(idx, 1);
+    renderPreviewLampiranForm();
+  }
+
+  function tambahPengajuan(e) {
+    e.preventDefault();
+    const items = ambilItemsDariForm();
+    if (items.length === 0) return alert('Tambahkan minimal 1 rincian item.');
+    const jenisSpj = document.getElementById('jenisSpj').value;
+    const nextNum = String(pengajuanList.length + 1).padStart(3, '0');
+    const prefix = jenisSpj === 'barang' ? 'SPJ-BRG' : 'SPJ-KEG';
+    const rkasRefName = schoolConfig.rkasBulanan ? schoolConfig.rkasBulanan.name : 'Belum ada file RKAS Bulanan';
+
+    pengajuanList.unshift({
+      id: Date.now(),
+      noKwitansi: `${prefix}/${nextNum}/XI/2026`,
+      bulanRkas: document.getElementById('bulanRkas').value,
+      rkasRefName,
+      kegiatanRkasRef: document.getElementById('kegiatanRkasRef').value.trim(),
+      jenisSpj,
+      kodeRek: document.getElementById('kodeRek').value.trim(),
+      uraian: document.getElementById('uraian').value.trim(),
+      penerima: document.getElementById('penerima').value.trim(),
+      noNota: document.getElementById('noNota').value.trim() || '-',
+      tglTerima: document.getElementById('tglTerima').value,
+      lokasiBarang: document.getElementById('lokasiBarang').value.trim() || 'Sekolah',
+      namaKegiatan: document.getElementById('namaKegiatan').value.trim() || '-',
+      tglKegiatan: document.getElementById('tglKegiatan').value,
+      tempatKegiatan: document.getElementById('tempatKegiatan').value.trim() || '-',
+      items,
+      lampiran: [...draftLampiran],
+      tanggal: new Date().toISOString().slice(0, 10),
+      status: 'pending',
+      catatan: ''
+    });
+
+    simpanKeLocalStorage();
+    e.target.reset();
+    resetFormItems();
+    toggleFormSpj();
+    renderTabel();
+  }
+
+  function prosesApproval(id, keputusan) {
+    const item = pengajuanList.find(x => x.id === id);
+    if (!item) return;
+    const catatan = prompt(keputusan === 'approved' ? 'Catatan persetujuan (opsional):' : 'Alasan penolakan:') || '';
+    if (keputusan === 'rejected' && !catatan.trim()) {
+      return alert('Harap isi alasan penolakan.');
+    }
+    item.status = keputusan;
+    item.catatan = catatan;
+    simpanKeLocalStorage();
+    renderTabel();
+  }
+
+  function renderTabel() {
+    const tbody = document.getElementById('tabelPengajuan');
+    tbody.innerHTML = pengajuanList.map(row => {
+      const s = hitungRingkasan(row.items);
+      const badgeLabel = row.status === 'approved' ? 'Disetujui Kepsek' : row.status === 'rejected' ? 'Ditolak' : 'Menunggu Kepsek';
+      const jenisLabel = row.jenisSpj === 'barang' ? 'SPJ Barang' : 'SPJ Kegiatan';
+      const lampiranTeks = row.lampiran.length > 0 ? `${row.lampiran.length} Foto` : 'Belum ada';
+
+      let aksiHtml = `<button class="btn-outline" onclick="bukaCetak(${row.id})">Cetak Dokumen & SPJ</button>`;
+      if (currentUser.role === 'kepsek' && row.status === 'pending') {
+        aksiHtml = `
+          <button class="btn-success" onclick="prosesApproval(${row.id}, 'approved')">Setujui</button>
+          <button class="btn-danger" onclick="prosesApproval(${row.id}, 'rejected')">Tolak</button>
+          ${aksiHtml}
+        `;
+      }
+
+      return `
+        <tr>
+          <td><strong>${row.noKwitansi}</strong><br/><small>${row.tanggal}</small></td>
+          <td><strong>Bulan ${row.bulanRkas}</strong><br/><span class="spj-tag">${jenisLabel}</span></td>
+          <td>
+            <div style="font-size:12px; color:#1e40af; font-weight:600;">${row.kegiatanRkasRef}</div>
+            <code>${row.kodeRek}</code> — ${row.uraian}
+            <div style="font-size:11px; color:#64748b;">Ref RKAS: ${row.rkasRefName}</div>
+          </td>
+          <td>${row.penerima}</td>
+          <td><strong>${rupiah(s.total)}</strong></td>
+          <td>${lampiranTeks}</td>
+          <td>
+            <span class="badge ${row.status}">${badgeLabel}</span>
+            ${row.catatan ? `<div style="font-size:11.5px; color:#475569; margin-top:4px;">Catatan: ${row.catatan}</div>` : ''}
+          </td>
+          <td style="white-space:nowrap;">${aksiHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function bukaCetak(id) {
+    const row = pengajuanList.find(x => x.id === id);
+    if (!row) return;
+    const s = hitungRingkasan(row.items);
+    const kopHtml = schoolConfig.kopDataUrl ? `<img src="${schoolConfig.kopDataUrl}" class="kop-cetak" alt="Kop Sekolah" />` : '';
+    const statusTeks = row.status === 'approved' ? 'DISETUJUI KEPALA SEKOLAH' : row.status === 'rejected' ? 'DITOLAK' : 'DRAFT / MENUNGGU PERSETUJUAN';
+
+    const rowsHtml = row.items.map((it, idx) => {
+      const sub = it.qty * it.harga;
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${it.nama}</td>
+          <td>${it.qty} ${it.satuan}</td>
+          <td>${rupiah(it.harga)}</td>
+          <td>PPN ${it.ppnPct}% / PPh ${it.pphPct}%</td>
+          <td><strong>${rupiah(sub)}</strong></td>
+        </tr>
+      `;
+    }).join('');
+
+    const lampiranCetakHtml = row.lampiran.length > 0 ? `
+      <div class="doc-box">
+        ${kopHtml}
+        <div class="doc-title">LAMPIRAN FOTO / BUKTI DUKUNG</div>
+        <div class="lampiran-grid">
+          ${row.lampiran.map(f => `
+            <div class="lampiran-thumb" style="width:160px;">
+              <img src="${f.dataUrl}" alt="${f.name}" style="height:110px;" />
+              <div>${f.name}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    const spjDetailHtml = row.jenisSpj === 'barang' ? `
+      <div class="doc-box">
+        ${kopHtml}
+        <div class="doc-title">LEMBAR SPJ BARANG & BERITA ACARA SERAH TERIMA (BAST)</div>
+        <p><strong>No. Dokumen:</strong> ${row.noKwitansi} &nbsp;|&nbsp; <strong>Bulan RKAS:</strong> ${row.bulanRkas}</p>
+        <p><strong>Kegiatan RKAS:</strong> ${row.kegiatanRkasRef}</p>
+        <p><strong>Kode Rekening:</strong> <code>${row.kodeRek}</code> &nbsp;|&nbsp; <strong>No. Nota:</strong> ${row.noNota}</p>
+        <p><strong>Penyedia / Toko:</strong> ${row.penerima} &nbsp;|&nbsp; <strong>Tanggal Terima:</strong> ${row.tglTerima} (${row.lokasiBarang})</p>
+        <table>
+          <thead><tr><th>No</th><th>Uraian Barang</th><th>Volume</th><th>Harga</th><th>Pajak</th><th>Subtotal</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div style="margin-top:10px; font-size:13px;">
+          Subtotal: <strong>${rupiah(s.subtotal)}</strong> | PPN: <strong>${rupiah(s.ppn)}</strong> | Potongan PPh: <strong>${rupiah(s.pph)}</strong> | Total Dibayar: <strong>${rupiah(s.total)}</strong>
+        </div>
+        <div class="ttd-grid">
+          <div>Yang Menyerahkan (Penyedia),<div class="ttd-space"></div><strong>${row.penerima}</strong></div>
+          <div>Yang Menerima (Bendahara),<div class="ttd-space"></div><strong>${schoolConfig.bendaharaNama}</strong><br/><small>${schoolConfig.bendaharaNip}</small></div>
+        </div>
+      </div>
+    ` : `
+      <div class="doc-box">
+        ${kopHtml}
+        <div class="doc-title">LEMBAR SPJ KEGIATAN</div>
+        <p><strong>No. Dokumen:</strong> ${row.noKwitansi} &nbsp;|&nbsp; <strong>Bulan RKAS:</strong> ${row.bulanRkas}</p>
+        <p><strong>Kegiatan RKAS:</strong> ${row.kegiatanRkasRef} &nbsp;|&nbsp; <strong>Kode Rekening:</strong> <code>${row.kodeRek}</code></p>
+        <p><strong>Nama Kegiatan:</strong> ${row.namaKegiatan}</p>
+        <p><strong>Tanggal Pelaksanaan:</strong> ${row.tglKegiatan} &nbsp;|&nbsp; <strong>Tempat:</strong> ${row.tempatKegiatan}</p>
+        <p><strong>Penanggung Jawab / Penerima:</strong> ${row.penerima}</p>
+        <table>
+          <thead><tr><th>No</th><th>Komponen Biaya</th><th>Volume</th><th>Harga</th><th>Pajak</th><th>Subtotal</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div style="margin-top:10px; font-size:13px;">
+          Subtotal: <strong>${rupiah(s.subtotal)}</strong> | PPN: <strong>${rupiah(s.ppn)}</strong> | Potongan PPh: <strong>${rupiah(s.pph)}</strong> | Total Dibayar: <strong>${rupiah(s.total)}</strong>
+        </div>
+        <div class="ttd-grid">
+          <div>Mengetahui,<br/>Kepala Sekolah<div class="ttd-space"></div><strong>${schoolConfig.kepsekNama}</strong><br/><small>${schoolConfig.kepsekNip}</small></div>
+          <div>Pelaksana / Bendahara,<div class="ttd-space"></div><strong>${schoolConfig.bendaharaNama}</strong><br/><small>${schoolConfig.bendaharaNip}</small></div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('kontenCetak').innerHTML = `
+      <div class="doc-box">
+        ${kopHtml}
+        <div class="doc-title">KWITANSI BUKTI PENGELUARAN DANA</div>
+        <p><strong>No. Kwitansi:</strong> ${row.noKwitansi} &nbsp;|&nbsp; <strong>Bulan RKAS:</strong> ${row.bulanRkas} (${row.jenisSpj === 'barang' ? 'SPJ Barang' : 'SPJ Kegiatan'})</p>
+        <p><strong>Kegiatan RKAS:</strong> ${row.kegiatanRkasRef}</p>
+        <p><strong>Status Persetujuan:</strong> ${statusTeks}</p>
+        <p><strong>Uang Sebesar:</strong> <strong>${rupiah(s.total)}</strong> (<em>${terbilang(s.total)}</em>)</p>
+        <p><strong>Untuk Keperluan:</strong> ${row.uraian}</p>
+        <p><strong>Diterima Oleh:</strong> ${row.penerima}</p>
+        <div class="ttd-grid">
+          <div>Menyetujui,<br/>Kepala Sekolah<div class="ttd-space"></div><strong>${schoolConfig.kepsekNama}</strong><br/><small>${schoolConfig.kepsekNip}</small></div>
+          <div>Bendahara,<br/>Tanggal: ${row.tanggal}<div class="ttd-space"></div><strong>${schoolConfig.bendaharaNama}</strong><br/><small>${schoolConfig.bendaharaNip}</small></div>
+        </div>
+      </div>
+
+      <div class="doc-box">
+        ${kopHtml}
+        <div class="doc-title">BON / RINCIAN PEMBAYARAN</div>
+        <table>
+          <thead><tr><th>No</th><th>Uraian</th><th>Volume</th><th>Harga</th><th>Pajak</th><th>Subtotal</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+
+      ${spjDetailHtml}
+      ${lampiranCetakHtml}
+    `;
+    document.getElementById('printModal').classList.remove('hidden');
+  }
+
+  function tutupModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+  }
+</script>
+</body>
+</html>
